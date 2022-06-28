@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import bisect
 import getch
-import mutagen.mp3 as mp3
+import mutagen
 import os
 import time
 import vlc
@@ -20,7 +20,7 @@ def _construct_track_index(content_directory: str) -> List[int]:
     total_duration_ms = 0
     for filename in os.listdir(content_directory):
         filepath = os.path.join(content_directory, filename)
-        file_duration_ms = int(mp3.MP3(filepath).info.length * 1e3)
+        file_duration_ms = int(mutagen.File(filepath).info.length * 1e3)
         total_duration_ms += file_duration_ms
         track_index.append(total_duration_ms)
 
@@ -129,7 +129,7 @@ class Radio:
                 if self._media_list_player.is_playing():
                     self._play()   
 
-stations_directory = "/home/lyric/Documents/radio/stations"
+stations_directory = "/home/lyric/Documents/local-radio/stations"
 play_keys = ['a', 's', 'd']
 previous_station_keys = ['q', 'w', 'e']
 next_station_keys = ['z', 'x', 'c']
