@@ -15,29 +15,6 @@ _STATION_LOOP_FACTOR = 3
 _INPUT_TIMEOUT_WINDOW_MS = 30 * 1e3
 
 
-def _construct_track_index(content_directory: str) -> List[int]:
-    track_index = []
-    total_duration_ms = 0
-    for filename in os.listdir(content_directory):
-        filepath = os.path.join(content_directory, filename)
-        file_duration_ms = int(mutagen.File(filepath).info.length * 1e3)
-        total_duration_ms += file_duration_ms
-        track_index.append(total_duration_ms)
-
-    return track_index
-
-def _construct_media_list(content_directory: str, vlc_instance: vlc.Instance) -> vlc.MediaList:
-    media_list = vlc_instance.media_list_new()
-    # The order of play is defined by sorting the files by name.
-    sorted_filenames = sorted(os.listdir(content_directory))
-
-    for _ in range(_STATION_LOOP_FACTOR):
-        for filename in sorted_filenames:
-            filepath = os.path.join(content_directory, filename)
-            media_list.add_media(vlc_instance.media_new(filepath))
-
-    return media_list
-
 def _get_start_time_ms(station_duration: int) -> int:
     return int(time.time() * 1e3) % station_duration
 
@@ -45,9 +22,38 @@ class Station:
 
     def __init__(self, content_directory: str, vlc_instance: vlc.Instance, media_list_player: vlc.MediaListPlayer):
         self.name = os.path.basename(content_directory)
-        self._track_index = _construct_track_index(content_directory)
-        self._media_list = _construct_media_list(content_directory, vlc_instance)
+        self._populate_track_index_and_media_list(content_directory, vlc_instance)
         self._media_list_player = media_list_player
+
+        print(self._track_index)
+
+    def _populate_track_index_and_media_list(self, content_directory: str, vlc_instance: vlc.Instance) -> None:
+
+        filepaths = []
+        for path, _, files in os.walk(content_directory):
+            for name in files:
+                filepaths.append(os.path.join(path, name))
+
+        # The order of play is defined by sorting the files by
+        # name. For best results, do not mix subdirectories and files
+        # in the same parent directory.
+        filepaths.sort()
+
+        # The self._track_index must follow the same order as
+        # self._media_list. The self._media_list additionally repeats
+        # files _STATION_LOOP_FACTOR times as a simple way of
+        # implementing looping the playlist a ~fixed number of times.
+        self._track_index = []
+        total_duration_ms = 0
+        for filepath in filepaths:
+            file_duration_ms = int(mutagen.File(filepath).info.length * 1e3)
+            total_duration_ms += file_duration_ms
+            self._track_index.append(total_duration_ms)
+
+        self._media_list = vlc_instance.media_list_new()
+        for _ in range(_STATION_LOOP_FACTOR):
+            for filepath in filepaths:
+                self._media_list.add_media(vlc_instance.media_new(filepath))
 
     def _duration(self) -> int:
         return self._track_index[-1]
@@ -78,7 +84,6 @@ class Radio:
         self._media_list_player = vlc.MediaListPlayer()
         
         self._current_station_index = 0
-        self._construct_stations(stations_directory, vlc_instance)
         self._stations = self._construct_stations(stations_directory=stations_directory, vlc_instance=vlc_instance)
         self._input_timeout_circular_buffer = [0] * (len(self._stations) * 2)
         self._input_timeout_index = 0
@@ -130,6 +135,7 @@ class Radio:
                     self._play()   
 
 stations_directory = "/home/lyric/Documents/local-radio/stations"
+stations_directory = "/home/lyric/Documents/radio/test/stations"
 play_keys = ['a', 's', 'd']
 previous_station_keys = ['q', 'w', 'e']
 next_station_keys = ['z', 'x', 'c']
