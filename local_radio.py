@@ -133,7 +133,6 @@ class Radio:
                     self._play()   
 
 stations_directory = "/home/lyric/Documents/local-radio/stations"
-stations_directory = "/home/lyric/Documents/radio/test/stations"
 play_keys = ['a', 's', 'd']
 previous_station_keys = ['q', 'w', 'e']
 next_station_keys = ['z', 'x', 'c']
