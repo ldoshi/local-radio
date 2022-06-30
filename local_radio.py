@@ -25,8 +25,6 @@ class Station:
         self._populate_track_index_and_media_list(content_directory, vlc_instance)
         self._media_list_player = media_list_player
 
-        print(self._track_index)
-
     def _populate_track_index_and_media_list(self, content_directory: str, vlc_instance: vlc.Instance) -> None:
 
         filepaths = []
