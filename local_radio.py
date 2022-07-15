@@ -50,7 +50,6 @@ class Station:
         self._media_list_player = media_list_player
 
     def _populate_track_seeker_and_media_list(self, content_directory: str, vlc_instance: vlc.Instance) -> None:
-
         filepaths = []
         for path, _, files in os.walk(content_directory):
             for name in files:
