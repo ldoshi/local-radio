@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+import abc 
 import bisect
 import getch
 import mutagen
@@ -42,7 +43,21 @@ class TrackSeeker:
             
         return track_index, track_start_time_ms
 
-class Station:
+class Station(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def play(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def is_playing(self) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def stop(self) -> None:
+        pass
+
+    
+class DirectoryStation(Station):
 
     def __init__(self, content_directory: str, vlc_instance: vlc.Instance, media_list_player: vlc.MediaListPlayer):
         self.name = os.path.basename(content_directory)
@@ -95,18 +110,17 @@ class Radio:
         self._media_list_player = vlc.MediaListPlayer()
         
         self._current_station_index = 0
-        self._stations = self._construct_stations(stations_directory=stations_directory, vlc_instance=vlc_instance)
+        self._stations = []
+        self._add_directory_stations(stations_directory=stations_directory, vlc_instance=vlc_instance)
 
         self._play_keys = play_keys
         self._change_station_next_keys = change_station_next_keys
         self._change_station_previous_keys = change_station_previous_keys
 
-    def _construct_stations(self, stations_directory: str, vlc_instance: vlc.Instance) -> List[Station]:
-        stations = []
+    def _add_directory_stations(self, stations_directory: str, vlc_instance: vlc.Instance) -> None:
         for station_name in sorted(os.listdir(stations_directory)):
             station_path = os.path.join(stations_directory, station_name)
-            stations.append(Station(content_directory=station_path, vlc_instance=vlc_instance, media_list_player=self._media_list_player))
-        return stations
+            self._stations.append(DirectoryStation(content_directory=station_path, vlc_instance=vlc_instance, media_list_player=self._media_list_player))
 
     def _current_station(self) -> Station:
         return self._stations[self._current_station_index]
