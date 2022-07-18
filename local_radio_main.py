@@ -28,7 +28,7 @@ def main():
     change_station_next_keys = ['z', 'x', 'c']
 
     radio = local_radio.Radio(
-        stations_directory=stations_directory,
+        stations=stations,
         play_keys=play_keys,
         change_station_previous_keys=change_station_previous_keys,
         change_station_next_keys=change_station_next_keys)

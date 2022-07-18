@@ -184,22 +184,12 @@ def create_spotify_stations(spotify_client: spotipy.client.Spotify, device_id: s
 
 class Radio:
 
-    def __init__(self, stations_directory: str, play_keys: List[str], change_station_next_keys: List[str], change_station_previous_keys: List[str]):
-        vlc_instance = vlc.Instance()
-        self._media_list_player = vlc.MediaListPlayer()
-        
+    def __init__(self, stations: List[Station], play_keys: List[str], change_station_next_keys: List[str], change_station_previous_keys: List[str]):
         self._current_station_index = 0
-        self._stations = []
-        self._add_directory_stations(stations_directory=stations_directory, vlc_instance=vlc_instance)
-
+        self._stations = stations
         self._play_keys = play_keys
         self._change_station_next_keys = change_station_next_keys
         self._change_station_previous_keys = change_station_previous_keys
-
-    def _add_directory_stations(self, stations_directory: str, vlc_instance: vlc.Instance) -> None:
-        for station_name in sorted(os.listdir(stations_directory)):
-            station_path = os.path.join(stations_directory, station_name)
-            self._stations.append(DirectoryStation(content_directory=station_path, vlc_instance=vlc_instance, media_list_player=self._media_list_player))
 
     def _current_station(self) -> Station:
         return self._stations[self._current_station_index]
