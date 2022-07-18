@@ -2,13 +2,13 @@ import local_radio
 import spotipy
 
 # Spotify access.
-_SPOTIPY_CLIENT_ID='5b235f6968d5493db1dbda0e5f306f1a'
-_SPOTIPY_CLIENT_SECRET='8773a9fa89684e768883bfa733ab7875'
+_SPOTIPY_CLIENT_ID='ENTER HERE'
+_SPOTIPY_CLIENT_SECRET='ENTER HERE'
 _SPOTIPY_REDIRECT_URI='http://localhost'
 _SPOTIFY_SCOPE = ["user-modify-playback-state", "user-read-playback-state", "user-read-currently-playing", "playlist-read-private", "playlist-read-collaborative", "app-remote-control", "streaming", "user-library-read"]
 
-# lemmings player.
-_DEVICE_ID = "a582ca56f0f370cf4eae00f3f1fccaad174b15bb"
+# Spotify player.
+_DEVICE_ID = "ENTER HERE"
 
 
 def main():
