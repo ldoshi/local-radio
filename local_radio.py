@@ -121,18 +121,38 @@ class SpotifyStation(Station):
 
     def play(self) -> None:
         track_index, track_start_time_ms = self._track_seeker.seek()
-        self._spotify_client.start_playback(
-            device_id=self._device_id,
-            context_uri=self._playlist_uri,
-            offset={"position": track_index},
-            position_ms=track_start_time_ms)
+
+        try:
+            self._spotify_client.start_playback(
+                device_id=self._device_id,
+                context_uri=self._playlist_uri,
+                offset={"position": track_index},
+                position_ms=track_start_time_ms)
+        except spotipy.exceptions.SpotifyException as e:
+            if e.code == -1 and e.http_status == 403:
+                # This occurs if the command player state already
+                # matches the command request. One way this can happen
+                # if the command is sent twice.
+                pass
+            else:
+                raise e
+
         self._spotify_client.repeat("context", device_id=self._device_id)
 
     def is_playing(self) -> bool:
         return self._spotify_client.currently_playing()['is_playing']
 
     def stop(self) -> None:
-        self._spotify_client.pause_playback(device_id=self._device_id)
+        try:
+            self._spotify_client.pause_playback(device_id=self._device_id)
+        except spotipy.exceptions.SpotifyException as e:
+            if e.code == -1 and e.http_status == 403:
+                # This occurs if the command player state already
+                # matches the command request. One way this can happen
+                # if the command is sent twice.
+                pass
+            else:
+                raise e
 
 
 def create_directory_stations(stations_directory: str) -> List[Station]:
@@ -190,13 +210,15 @@ class Radio:
                     self._current_station().play()
             elif command in self._change_station_previous_keys:
                 is_playing = self._current_station().is_playing()
-                self._current_station().stop()
+                if is_playing:
+                    self._current_station().stop()
                 self._change_station_previous()
                 if is_playing:
                     self._current_station().play()   
             elif command in self._change_station_next_keys:
                 is_playing = self._current_station().is_playing()
-                self._current_station().stop()
+                if is_playing:
+                    self._current_station().stop()
                 self._change_station_next()
                 if is_playing:
                     self._current_station().play()
