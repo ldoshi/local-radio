@@ -140,7 +140,12 @@ class SpotifyStation(Station):
         self._spotify_client.repeat("context", device_id=self._device_id)
 
     def is_playing(self) -> bool:
-        return self._spotify_client.currently_playing()['is_playing']
+        while True:
+            try:
+                currently_playing = self._spotify_client.currently_playing()
+                return not currently_playing or currently_playing['is_playing']
+            except:
+                pass
 
     def stop(self) -> None:
         try:
@@ -209,6 +214,7 @@ class Radio:
                     self._current_station().stop()
                 else:
                     self._current_station().play()
+
             elif command in self._change_station_previous_keys:
                 is_playing = self._current_station().is_playing()
                 if is_playing:
