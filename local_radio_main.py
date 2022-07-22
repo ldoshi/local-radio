@@ -13,31 +13,27 @@ _DEVICE_ID = "ENTER HERE"
 
 def main():
     stations = []
-    try: 
-        stations_directory = "/home/lyric/Documents/local-radio/stations"
-        stations.extend(local_radio.create_directory_stations(stations_directory))
 
-        spotify_client = spotipy.Spotify(auth_manager=spotipy.oauth2.SpotifyOAuth(
-            client_id=_SPOTIPY_CLIENT_ID,
-            client_secret=_SPOTIPY_CLIENT_SECRET,
-            redirect_uri=_SPOTIPY_REDIRECT_URI,
-            scope=_SPOTIFY_SCOPE))
-        stations.extend(local_radio.create_spotify_stations(spotify_client, _DEVICE_ID))
+    stations_directory = "/home/lyric/Documents/local-radio/stations"
+    stations.extend(local_radio.create_directory_stations(stations_directory))
 
-        play_keys = ['a', 's', 'd']
-        change_station_previous_keys = ['q', 'w', 'e']
-        change_station_next_keys = ['z', 'x', 'c']
+    spotify_client = spotipy.Spotify(auth_manager=spotipy.oauth2.SpotifyOAuth(
+        client_id=_SPOTIPY_CLIENT_ID,
+        client_secret=_SPOTIPY_CLIENT_SECRET,
+        redirect_uri=_SPOTIPY_REDIRECT_URI,
+        scope=_SPOTIFY_SCOPE))
+    stations.extend(local_radio.create_spotify_stations(spotify_client, _DEVICE_ID))
 
-        radio = local_radio.Radio(
-            stations=stations,
-            play_keys=play_keys,
-            change_station_previous_keys=change_station_previous_keys,
-            change_station_next_keys=change_station_next_keys)
-        radio.start()
-    finally:
-        for station in stations:
-            if station.is_playing():
-                station.stop()
+    play_keys = ['a', 's', 'd']
+    change_station_previous_keys = ['q', 'w', 'e']
+    change_station_next_keys = ['z', 'x', 'c']
+
+    radio = local_radio.Radio(
+        stations=stations,
+        play_keys=play_keys,
+        change_station_previous_keys=change_station_previous_keys,
+        change_station_next_keys=change_station_next_keys)
+    radio.start()
         
                     
 if __name__ == "__main__":

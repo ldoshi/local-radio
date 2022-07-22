@@ -207,27 +207,31 @@ class Radio:
 
     def start(self) -> None:
         while True:
-            command = getch.getch()
-            
-            if command in self._play_keys:
-                if self._current_station().is_playing():
-                    self._current_station().stop()
-                else:
-                    self._current_station().play()
+            try:
+                command = getch.getch()
 
-            elif command in self._change_station_previous_keys:
-                is_playing = self._current_station().is_playing()
-                if is_playing:
-                    self._current_station().stop()
-                self._change_station_previous()
-                if is_playing:
-                    self._current_station().play()   
-            elif command in self._change_station_next_keys:
-                is_playing = self._current_station().is_playing()
-                if is_playing:
-                    self._current_station().stop()
-                self._change_station_next()
-                if is_playing:
-                    self._current_station().play()
+                if command in self._play_keys:
+                    if self._current_station().is_playing():
+                        self._current_station().stop()
+                    else:
+                        self._current_station().play()
+
+                elif command in self._change_station_previous_keys:
+                    is_playing = self._current_station().is_playing()
+                    if is_playing:
+                        self._current_station().stop()
+                    self._change_station_previous()
+                    if is_playing:
+                        self._current_station().play()   
+                elif command in self._change_station_next_keys:
+                    is_playing = self._current_station().is_playing()
+                    if is_playing:
+                        self._current_station().stop()
+                    self._change_station_next()
+                    if is_playing:
+                        self._current_station().play()
+            except Exception as e:
+                print(e)
+                
 
 
