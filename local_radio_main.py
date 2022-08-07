@@ -1,3 +1,5 @@
+from typing import List
+
 import local_radio
 import spotipy
 
@@ -12,27 +14,31 @@ _DEVICE_ID = "ENTER HERE"
 
 
 def main():
-    stations = []
 
     stations_directory = "/home/lyric/Documents/local-radio/stations"
-    stations.extend(local_radio.create_directory_stations(stations_directory))
-
     spotify_client = spotipy.Spotify(auth_manager=spotipy.oauth2.SpotifyOAuth(
         client_id=_SPOTIPY_CLIENT_ID,
         client_secret=_SPOTIPY_CLIENT_SECRET,
         redirect_uri=_SPOTIPY_REDIRECT_URI,
         scope=_SPOTIFY_SCOPE))
-    stations.extend(local_radio.create_spotify_stations(spotify_client, _DEVICE_ID))
+
+    def get_stations() -> List[local_radio.Station]:
+        stations = []
+        stations.extend(local_radio.create_directory_stations(stations_directory))
+        stations.extend(local_radio.create_spotify_stations(spotify_client, _DEVICE_ID))
+        return stations
 
     play_keys = ['a', 's', 'd']
     change_station_previous_keys = ['q', 'w', 'e']
     change_station_next_keys = ['z', 'x', 'c']
-
+    refresh_stations_code = "qwedcxza"
+    
     radio = local_radio.Radio(
-        stations=stations,
+        get_stations_fn=get_stations,
         play_keys=play_keys,
         change_station_previous_keys=change_station_previous_keys,
-        change_station_next_keys=change_station_next_keys)
+        change_station_next_keys=change_station_next_keys,
+        refresh_stations_code=refresh_stations_code)
     radio.start()
         
                     

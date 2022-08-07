@@ -1,7 +1,8 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import abc 
 import bisect
+import collections 
 import getch
 import mutagen
 import os
@@ -11,7 +12,6 @@ import vlc
 
 # The max number of times a station will "loop".
 _STATION_LOOP_FACTOR = 3
-
 
 def _get_time():
     return int(time.time() * 1e3)
@@ -189,13 +189,30 @@ def create_spotify_stations(spotify_client: spotipy.client.Spotify, device_id: s
 
 class Radio:
 
-    def __init__(self, stations: List[Station], play_keys: List[str], change_station_next_keys: List[str], change_station_previous_keys: List[str]):
-        self._current_station_index = 0
-        self._stations = stations
+    def __init__(self, get_stations_fn: Callable[[], List[Station]], play_keys: List[str], change_station_next_keys: List[str], change_station_previous_keys: List[str], refresh_stations_code: str):
+        self._get_stations_fn = get_stations_fn
+        self._refresh_stations() 
         self._play_keys = play_keys
         self._change_station_next_keys = change_station_next_keys
         self._change_station_previous_keys = change_station_previous_keys
+        self._refresh_stations_code = collections.deque(refresh_stations_code)
+        self._command_buffer = collections.deque([None] * len(self._refresh_stations_code))
 
+    def _refresh_stations_if_necessary(self, command: str) -> bool:
+        self._command_buffer.popleft()
+        self._command_buffer.append(command)
+        if self._command_buffer != self._refresh_stations_code:
+            return False
+
+        self._refresh_stations()        
+        # Beep!
+        print('\a')
+        return True        
+        
+    def _refresh_stations(self) -> None:
+        self._current_station_index = 0
+        self._stations = self._get_stations_fn()
+        
     def _current_station(self) -> Station:
         return self._stations[self._current_station_index]
         
@@ -208,7 +225,10 @@ class Radio:
     def start(self) -> None:
         while True:
             try:
-                command = getch.getch()
+                command = getch.getch().lower()
+
+                if self._refresh_stations_if_necessary(command):
+                    continue
 
                 if command in self._play_keys:
                     if self._current_station().is_playing():
