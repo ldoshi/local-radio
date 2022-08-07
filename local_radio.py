@@ -186,6 +186,10 @@ def create_spotify_stations(spotify_client: spotipy.client.Spotify, device_id: s
     
     return stations
 
+def beep() -> None:
+    for _ in range(10):
+        print('\a')
+        time.sleep(.4)
 
 class Radio:
 
@@ -204,9 +208,8 @@ class Radio:
         if self._command_buffer != self._refresh_stations_code:
             return False
 
-        self._refresh_stations()        
-        # Beep!
-        print('\a')
+        self._refresh_stations()
+        beep()
         return True        
         
     def _refresh_stations(self) -> None:
